@@ -311,10 +311,37 @@
 
                     <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
                         <h3 class="font-bold text-slate-800 text-sm">
-                            <i class="ri-tools-line text-brand-500 text-lg"></i> المهارات
+                            <i class="ri-tools-line text-brand-500 text-lg"></i> المهارات التقنية
                         </h3>
                         <textarea id="inp-skills" rows="2" placeholder="اكتب المهارات وافصل بينها بفاصلة (،)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none mb-1 focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
                         <input type="text" id="inp-langs" placeholder="اللغات (عربي، إنجليزي...)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()">
+                    </div>
+
+                    <!-- المهارات الشخصية المضافة -->
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="ri-user-heart-line text-brand-500 text-lg"></i> المهارات الشخصية
+                        </h3>
+                        <textarea id="inp-soft-skills" rows="2" placeholder="مثال: القيادة، العمل الجماعي، التواصل الفعال، حل المشكلات..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
+                        <span class="input-hint"><i class="ri-information-line"></i> هذه المهارات ضرورية وتزيد من فرصك في القبول</span>
+                    </div>
+
+                    <!-- المشاريع الشخصية المضافة -->
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="ri-lightbulb-line text-brand-500 text-lg"></i> المشاريع الشخصية
+                        </h3>
+                        <textarea id="inp-projects" rows="3" placeholder="اذكر أهم المشاريع التي قمت بها (اسم المشروع: وصف موجز)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
+                        <span class="input-hint"><i class="ri-information-line"></i> المشاريع تظهر خبرتك العملية وقدرتك على التطبيق</span>
+                    </div>
+
+                    <!-- الدورات التدريبية المضافة -->
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="ri-award-line text-brand-500 text-lg"></i> الدورات والشهادات
+                        </h3>
+                        <textarea id="inp-certifications" rows="2" placeholder="مثال: شهادة ICDL، دورة إدارة المشاريع، شهادة لغة إنجليزية..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
+                        <span class="input-hint"><i class="ri-information-line"></i> الشهادات والدورات تعزز من مصداقية خبراتك</span>
                     </div>
                 
                     <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
@@ -604,6 +631,33 @@
                                     <span id="cv-edu-date-prev" class="text-sm font-bold accent-color-1 font-sans arabic-text"></span>
                                 </div>
                             </div>
+
+                            <!-- المهارات الشخصية المضافة -->
+                            <div class="mb-6">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-5 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-user-heart-line"></i></div>
+                                    المهارات الشخصية
+                                </h3>
+                                <div id="cv-soft-skills" class="flex flex-wrap gap-2 arabic-text"></div>
+                            </div>
+
+                            <!-- المشاريع الشخصية المضافة -->
+                            <div class="mb-6">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-5 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-lightbulb-line"></i></div>
+                                    المشاريع الشخصية
+                                </h3>
+                                <div id="cv-projects" class="space-y-3 arabic-text"></div>
+                            </div>
+
+                            <!-- الدورات التدريبية المضافة -->
+                            <div class="mb-6">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-5 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-award-line"></i></div>
+                                    الدورات والشهادات
+                                </h3>
+                                <div id="cv-certifications" class="space-y-2 arabic-text"></div>
+                            </div>
                             
                             <div class="mt-8 border-t border-gray-100 pt-4">
                                 <div class="flex justify-between items-center">
@@ -810,6 +864,21 @@
                 const skills = document.getElementById('inp-skills').value;
                 const skillsHtml = skills ? skills.split(/,|،/).filter(s=>s.trim()).map(s=>`<span class="bg-white/15 px-2 py-1 rounded text-[10px] border border-white/10 inline-block arabic-text">${s.trim()}</span>`).join('') : '';
                 document.getElementById('cv-skills-list').innerHTML = skillsHtml;
+
+                // تحديث المهارات الشخصية
+                const softSkills = document.getElementById('inp-soft-skills').value;
+                const softSkillsHtml = softSkills ? softSkills.split(/,|،/).filter(s=>s.trim()).map(s=>`<span class="bg-slate-100 px-3 py-1 rounded-full text-xs border border-slate-200 inline-block arabic-text">${s.trim()}</span>`).join('') : '';
+                document.getElementById('cv-soft-skills').innerHTML = softSkillsHtml;
+
+                // تحديث المشاريع الشخصية
+                const projects = document.getElementById('inp-projects').value;
+                const projectsHtml = projects ? projects.split('\n').filter(p=>p.trim()).map(p=>`<div class="bg-slate-50 p-3 rounded-lg border border-slate-100"><p class="text-sm text-slate-700 arabic-text">${p.trim()}</p></div>`).join('') : '';
+                document.getElementById('cv-projects').innerHTML = projectsHtml;
+
+                // تحديث الدورات والشهادات
+                const certifications = document.getElementById('inp-certifications').value;
+                const certificationsHtml = certifications ? certifications.split('\n').filter(c=>c.trim()).map(c=>`<div class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-green-500 text-xs"></i><span class="text-sm text-slate-600 arabic-text">${c.trim()}</span></div>`).join('') : '';
+                document.getElementById('cv-certifications').innerHTML = certificationsHtml;
 
                 if(app.state.qrActive) app.generateQR();
                 app.calculateScore();
@@ -1049,13 +1118,13 @@
             },
 
             // ==========================================
-            // الدالة الجديدة للطباعة (الحل الجذري)
+            // الدالة المحدثة للطباعة (للمستخدمين المحترفين فقط)
             // ==========================================
             handleDownload: () => {
-                // تم تعطيل التحقق للسماح بالتجربة الفورية
-                // if(!app.state.isPro) { app.showProModal(); return; }
-                
-                // ببساطة نفتح نافذة الطباعة والمتصفح سيتكفل بالباقي بفضل إعدادات CSS
+                if(!app.state.isPro) { 
+                    app.showProModal(); 
+                    return; 
+                }
                 window.print();
             },
 
