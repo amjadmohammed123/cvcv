@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سيرتي AI - صانع السيرة الذاتية الذكي</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700;900&family=Almarai:wght@300;400;700;800&family=Changa:wght@300;400;600;700&family=El+Messiri:wght@400;500;600;700&family=Lateef:wght@400;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 900: '#14532d' },
+                        accent: { 500: '#6366f1', 600: '#4f46e5' }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif'],
+                        almarai: ['Almarai', 'sans-serif'],
+                        amiri: ['Amiri', 'serif'],
+                        ibm: ['IBM Plex Sans Arabic', 'sans-serif'],
+                        changa: ['Changa', 'sans-serif'],
+                        messiri: ['El Messiri', 'sans-serif'],
+                        lateef: ['Lateef', 'serif'],
+                        reem: ['Reem Kufi', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <!-- Firebase Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            overflow-x: hidden; 
+            background-color: #f3f4f6; 
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        #preview-container-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: hidden;
+            padding-top: 20px;
+            perspective: 1000px;
+        }
+
+        #cv-preview {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transform-origin: top center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            direction: rtl;
+            unicode-bidi: bidi-override;
+            text-align: right;
+            font-feature-settings: "liga" 1, "kern" 1;
+            -webkit-font-smoothing: antialiased;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .template-sidebar-right { display: flex; }
+        .template-sidebar-left { display: flex; flex-direction: row-reverse; }
+        .profile-img-container { overflow: hidden; object-fit: cover; }
+        #qr-code img { display: block; margin: 0 auto; }
+        .input-hint { font-size: 0.7rem; color: #64748b; margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        
+        .premium-lock {
+            position: absolute; inset: 0;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(2px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10; cursor: pointer; transition: all 0.3s;
+            border: 2px dashed #fbbf24;
+        }
+        .premium-lock:hover { background: rgba(255,255,255,0.5); }
+
+        .sidebar-bg-1 { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+        .sidebar-bg-2 { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .sidebar-bg-3 { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+        .sidebar-bg-4 { background: linear-gradient(135deg, #7e22ce 0%, #a855f7 100%); }
+        .sidebar-bg-5 { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+        .sidebar-bg-6 { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
+        .sidebar-bg-7 { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); }
+        .sidebar-bg-8 { background: linear-gradient(135deg, #1e293b 0%, #475569 100%); }
+
+        .accent-color-1 { color: #3b82f6; }
+        .accent-color-2 { color: #6366f1; }
+        .accent-color-3 { color: #10b981; }
+        .accent-color-4 { color: #8b5cf6; }
+        .accent-color-5 { color: #f59e0b; }
+        .accent-color-6 { color: #ef4444; }
+        .accent-color-7 { color: #ec4899; }
+        .accent-color-8 { color: #06b6d4; }
+
+        .arabic-text {
+            font-family: 'Cairo', 'Tajawal', 'Amiri', sans-serif;
+            line-height: 1.6;
+            text-align: right;
+            direction: rtl;
+        }
+
+        .template-container { display: flex; width: 100%; min-height: 297mm; }
+        .template-sidebar { padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+        .template-main { padding: 2rem; flex: 1; }
+
+        .template-img-container {
+            width: 120px; height: 120px; border-radius: 50%; overflow: hidden;
+            margin: 0 auto; border: 4px solid rgba(255, 255, 255, 0.2);
+        }
+        .template-img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3; border-top: 3px solid #22c55e;
+            border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            #cv-preview { transform: scale(0.8); margin-top: 10px; }
+        }
+
+        @media print {
+            body { background: white; }
+            header, #panel-editor, #btn-desktop-preview, #btn-desktop-editor,
+            .zoom-controls, #watermark, .hidden.md\:flex.absolute.bottom-6, 
+            .md\:hidden.absolute.bottom-6 { display: none !important; }
+
+            #panel-preview {
+                background: white !important;
+                overflow: visible !important;
+                height: auto !important;
+                display: block !important;
+                position: static !important;
+            }
+
+            #preview-container-wrapper {
+                padding: 0 !important;
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+            }
+
+            #cv-preview {
+                transform: none !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 297mm !important;
+                page-break-after: always;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <header class="h-16 glass-panel z-30 px-4 flex items-center justify-between shrink-0 shadow-sm border-b border-white/50">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-tr from-brand-600 to-brand-400 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-brand-500/20 text-xl">س</div>
+            <div>
+                <h1 class="font-bold text-lg text-slate-800 leading-none">سيرتي <span class="text-brand-600">AI</span></h1>
+                <span class="text-[10px] text-slate-400 font-medium">الجيل الجديد من السير الذاتية</span>
+            </div>
+            <span id="pro-badge" class="hidden px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full border border-amber-200 flex items-center gap-1 shadow-sm">
+                <i class="ri-vip-crown-fill"></i> PRO
+            </span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <div class="hidden md:flex flex-col items-end mr-2">
+                <span class="text-[9px] text-slate-400 font-bold">قوة السيرة الذاتية</span>
+                <div class="w-24 h-1.5 bg-gray-200 rounded-full mt-1 overflow-hidden">
+                    <div id="score-bar" class="h-full bg-red-500 w-[10%] transition-all duration-700 ease-out shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                </div>
+            </div>
+            
+            <!-- أزرار المعاينة والتحرير التي تم نقلها -->
+            <button onclick="app.switchView('preview')" id="btn-desktop-preview" class="flex group items-center gap-2 bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-xl shadow transition-all text-xs font-bold hover:bg-slate-50 hover:scale-105">
+                <i class="ri-eye-line text-lg"></i> <span>معاينة</span>
+            </button>
+            
+            <button onclick="app.switchView('editor')" id="btn-desktop-editor" class="flex group items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl shadow transition-all text-xs font-bold hover:bg-slate-800 hover:scale-105">
+                <i class="ri-edit-line text-lg"></i> <span>محرر</span>
+            </button>
+            
+            <button onclick="app.handleDownload()" class="group flex items-center gap-2 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white px-4 py-2 rounded-xl shadow-xl transition-all text-xs font-bold hover:scale-105 hover:shadow-2xl">
+                <i class="ri-download-cloud-2-line text-lg group-hover:animate-bounce"></i> <span>حفظ PDF</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden relative w-full">
+        
+        <!-- تم إزالة شريط الأزرار السفلي للأجهزة المحمولة -->
+
+        <div id="panel-editor" class="w-full md:w-[480px] bg-white flex flex-col h-full transition-transform z-20 border-l border-gray-200 shrink-0 shadow-xl">
+            <div class="flex border-b border-gray-100 shrink-0">
+                <button onclick="app.switchTab('content')" id="tab-content" class="flex-1 py-4 text-sm font-bold text-brand-600 border-b-2 border-brand-600 bg-brand-50/50 transition-colors">
+                    <i class="ri-file-text-line align-middle"></i> المحتوى
+                </button>
+                <button onclick="app.switchTab('design')" id="tab-design" class="flex-1 py-4 text-sm font-bold text-gray-400 hover:text-slate-600 transition-colors">
+                    <i class="ri-palette-line align-middle"></i> التصميم والذكاء
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 space-y-6 pb-32 md:pb-10 custom-scrollbar bg-slate-50/50">
+                
+                <div id="content-content" class="space-y-5 animate-in slide-in-from-left-4 duration-300">
+                    
+                    <div class="space-y-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm group hover:border-brand-300 transition-colors">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="ri-user-smile-line text-brand-500 text-lg"></i> البيانات الشخصية
+                            </h3>
+                            <div class="text-[10px] text-green-600 bg-green-50 px-2 py-1 rounded-lg border border-green-100 font-bold hidden group-hover:block">يظهر في الرأس</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 gap-3">
+                            <div>
+                                <input type="text" id="inp-name" placeholder="الاسم الثلاثي" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand-500 outline-none focus:bg-white transition-all arabic-text" oninput="app.updateCV()">
+                                <span class="input-hint"><i class="ri-information-line"></i> اكتب اسمك كما تحب أن يظهر لمدير التوظيف</span>
+                            </div>
+                            <div>
+                                <input type="text" id="inp-title" placeholder="المسمى الوظيفي (مثال: محاسب عام)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:border-brand-500 outline-none font-bold text-brand-700 focus:bg-white transition-all arabic-text" oninput="app.updateCV()">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" id="inp-phone" placeholder="01xxxxxxxxx" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none dir-ltr text-right focus:bg-white focus:border-brand-500 transition-all" oninput="app.updateCV()">
+                                <input type="email" id="inp-email" placeholder="example@email.com" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all dir-ltr text-right" oninput="app.updateCV()">
+                            </div>
+                            <input type="text" id="inp-address" placeholder="المدينة، الدولة" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()">
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-brand-100 to-transparent rounded-bl-full -mr-8 -mt-8 opacity-50"></div>
+                        <h3 class="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
+                            <i class="ri-text-wrap text-brand-500 text-lg"></i> نبذة احترافية
+                        </h3>
+                        <div class="flex flex-col gap-2 relative z-10">
+                            <textarea id="inp-summary" rows="4" placeholder="اكتب ملخصاً يوضح شغفك ومهاراتك..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none resize-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
+                            <span class="input-hint"><i class="ri-lightbulb-flash-line text-amber-500"></i> نصيحة: ركز على القيمة التي ستضيفها للشركة.</span>
+                            <button onclick="app.generateAISummary()" id="btn-ai-summary" class="w-full bg-slate-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 mt-1 shadow-lg">
+                                <i class="ri-sparkling-2-line text-brand-400"></i> <span>اكتب لي باستخدام الذكاء الاصطناعي</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="ri-briefcase-line text-brand-500 text-lg"></i> الخبرة العملية <span class="text-[10px] text-gray-400 font-normal mr-auto">(الأحدث أولاً)</span>
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="inp-exp-role" placeholder="المسمى الوظيفي" class="col-span-2 p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()">
+                            <input type="text" id="inp-exp-company" placeholder="اسم الشركة" class="p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()">
+                            <input type="text" id="inp-exp-date" placeholder="2020 - الآن" class="p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()">
+                        </div>
+                        
+                        <div class="flex flex-col gap-2">
+                            <textarea id="inp-exp-desc" rows="4" placeholder="- قدت فريقاً مكوناً من 5 أشخاص&#10;- زدت المبيعات بنسبة 20%" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all resize-none arabic-text" oninput="app.updateCV()"></textarea>
+                            <button onclick="app.refineAIExperience()" id="btn-ai-refine" class="w-full bg-indigo-50 text-indigo-600 border border-indigo-100 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2">
+                                <i class="ri-magic-line"></i> <span>تحويل إلى نقاط إنجاز احترافية (AI)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm">
+                            <i class="ri-graduation-cap-line text-brand-500 text-lg"></i> التعليم
+                        </h3>
+                        <input type="text" id="inp-edu-degree" placeholder="الدرجة العلمية (بكالوريوس...)" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()">
+                        <div class="flex gap-2">
+                            <input type="text" id="inp-edu-uni" placeholder="الجامعة / المعهد" class="w-2/3 p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white arabic-text" oninput="app.updateCV()">
+                            <input type="text" id="inp-edu-date" placeholder="السنة" class="w-1/3 p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white arabic-text" oninput="app.updateCV()">
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm">
+                            <i class="ri-tools-line text-brand-500 text-lg"></i> المهارات التقنية
+                        </h3>
+                        <textarea id="inp-skills" rows="2" placeholder="اكتب المهارات وافصل بينها بفاصلة (،)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none mb-1 focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
+                        <input type="text" id="inp-langs" placeholder="اللغات (عربي، إنجليزي...)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()">
+                    </div>
+
+                    <!-- المهارات الشخصية المضافة -->
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="ri-user-heart-line text-brand-500 text-lg"></i> المهارات الشخصية
+                        </h3>
+                        <textarea id="inp-soft-skills" rows="2" placeholder="مثال: القيادة، العمل الجماعي، التواصل الفعال، حل المشكلات..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
+                        <span class="input-hint"><i class="ri-information-line"></i> هذه المهارات ضرورية وتزيد من فرصك في القبول</span>
+                    </div>
+
+                    <!-- المشاريع الشخصية المضافة -->
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="ri-lightbulb-line text-brand-500 text-lg"></i> المشاريع الشخصية
+                        </h3>
+                        <textarea id="inp-projects" rows="3" placeholder="اذكر أهم المشاريع التي قمت بها (اسم المشروع: وصف موجز)" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
+                        <span class="input-hint"><i class="ri-information-line"></i> المشاريع تظهر خبرتك العملية وقدرتك على التطبيق</span>
+                    </div>
+
+                    <!-- الدورات التدريبية المضافة -->
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="ri-award-line text-brand-500 text-lg"></i> الدورات والشهادات
+                        </h3>
+                        <textarea id="inp-certifications" rows="2" placeholder="مثال: شهادة ICDL، دورة إدارة المشاريع، شهادة لغة إنجليزية..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:border-brand-500 transition-all arabic-text" oninput="app.updateCV()"></textarea>
+                        <span class="input-hint"><i class="ri-information-line"></i> الشهادات والدورات تعزز من مصداقية خبراتك</span>
+                    </div>
+                
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i class="ri-image-line text-brand-500"></i> الصورة الشخصية
+                            </h3>
+                            <label class="flex items-center gap-2 cursor-pointer relative group">
+                                <span class="text-[10px] text-slate-500 font-bold">إخفاء الصورة</span>
+                                <div class="relative">
+                                    <input type="checkbox" id="toggle-img" class="sr-only peer" onchange="app.toggleImage(this)">
+                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-600"></div>
+                                    <div class="premium-lock-icon hidden absolute -top-3 -right-2 bg-amber-100 rounded-full border border-amber-200 p-0.5 z-10" id="img-lock"><i class="ri-lock-fill text-amber-600 text-[10px]"></i></div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                <img id="thumb-preview" src="" class="w-full h-full object-cover hidden">
+                                <i id="thumb-icon" class="ri-user-line text-2xl text-gray-400"></i>
+                            </div>
+                            <label class="cursor-pointer bg-slate-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow hover:bg-slate-700 transition-colors flex-1 text-center flex items-center justify-center gap-2">
+                                <i class="ri-upload-cloud-line"></i> <span>رفع صورة</span>
+                                <input type="file" class="hidden" accept="image/*" onchange="app.handleImageUpload(event)">
+                            </label>
+                            <button onclick="app.removeImage()" class="text-red-500 text-xs font-bold bg-red-50 px-3 py-2.5 rounded-xl hover:bg-red-100 border border-red-100">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="content-design" class="hidden space-y-6 animate-in slide-in-from-right-4 duration-300">
+                    
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                            <i class="ri-layout-masonry-line text-brand-500"></i> قوالب الهيكلة الذكية
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="app.setTemplate('classic')" class="p-2 border-2 border-brand-500 bg-brand-50 rounded-xl flex flex-col gap-2 transition-all relative overflow-hidden" id="tmpl-classic">
+                                <div class="h-12 w-full bg-white rounded border border-gray-200 flex p-1 gap-1">
+                                    <div class="w-1/3 bg-gray-200 h-full rounded-sm"></div>
+                                    <div class="w-2/3 flex flex-col gap-1"><div class="h-2 bg-gray-300 w-full rounded-sm"></div><div class="h-full bg-gray-100 rounded-sm"></div></div>
+                                </div>
+                                <span class="text-xs font-bold text-center w-full block">كلاسيكي (يمين)</span>
+                            </button>
+                            
+                            <div class="relative group">
+                                <button onclick="app.setTemplate('modern')" class="w-full p-2 border border-gray-200 rounded-xl flex flex-col gap-2 hover:bg-gray-50 transition-all" id="tmpl-modern">
+                                    <div class="h-12 w-full bg-white rounded border border-gray-200 flex flex-col p-1 gap-1">
+                                        <div class="w-full h-3 bg-slate-700 rounded-sm"></div>
+                                        <div class="flex gap-1 h-full"><div class="w-2/3 bg-gray-100"></div><div class="w-1/3 bg-gray-200"></div></div>
+                                    </div>
+                                    <span class="text-xs font-bold text-center w-full block">مودرن (هيدر)</span>
+                                </button>
+                                <div id="lock-tmpl-modern" class="premium-lock rounded-xl" onclick="app.showProModal()"><i class="ri-lock-fill text-amber-500 text-xl"></i></div>
+                            </div>
+
+                             <div class="relative group">
+                                <button onclick="app.setTemplate('left')" class="w-full p-2 border border-gray-200 rounded-xl flex flex-col gap-2 hover:bg-gray-50 transition-all" id="tmpl-left">
+                                    <div class="h-12 w-full bg-white rounded border border-gray-200 flex flex-row-reverse p-1 gap-1">
+                                        <div class="w-1/3 bg-gray-300 h-full rounded-sm"></div>
+                                        <div class="w-2/3 flex flex-col gap-1"><div class="h-2 bg-gray-300 w-full rounded-sm"></div><div class="h-full bg-gray-100 rounded-sm"></div></div>
+                                    </div>
+                                    <span class="text-xs font-bold text-center w-full block">أنيق (يسار)</span>
+                                </button>
+                                <div id="lock-tmpl-left" class="premium-lock rounded-xl" onclick="app.showProModal()"><i class="ri-lock-fill text-amber-500 text-xl"></i></div>
+                            </div>
+
+                            <div class="relative group">
+                                <button onclick="app.setTemplate('minimalist')" class="w-full p-2 border border-gray-200 rounded-xl flex flex-col gap-2 hover:bg-gray-50 transition-all" id="tmpl-minimalist">
+                                    <div class="h-12 w-full bg-white rounded border border-gray-200 flex p-1 gap-1">
+                                        <div class="w-1/4 bg-gray-200 h-full rounded-sm"></div>
+                                        <div class="w-3/4 flex flex-col gap-1"><div class="h-1 bg-gray-300 w-full rounded-sm"></div><div class="h-1 bg-gray-300 w-4/5 rounded-sm"></div><div class="h-full bg-gray-100 rounded-sm"></div></div>
+                                    </div>
+                                    <span class="text-xs font-bold text-center w-full block">بسيط</span>
+                                </button>
+                                <div id="lock-tmpl-minimalist" class="premium-lock rounded-xl" onclick="app.showProModal()"><i class="ri-lock-fill text-amber-500 text-xl"></i></div>
+                            </div>
+
+                            <div class="relative group">
+                                <button onclick="app.setTemplate('professional')" class="w-full p-2 border border-gray-200 rounded-xl flex flex-col gap-2 hover:bg-gray-50 transition-all" id="tmpl-professional">
+                                    <div class="h-12 w-full bg-white rounded border border-gray-200 flex p-1 gap-1">
+                                        <div class="w-2/5 bg-gray-200 h-full rounded-sm"></div>
+                                        <div class="w-3/5 flex flex-col gap-1"><div class="h-2 bg-gray-300 w-full rounded-sm"></div><div class="h-2 bg-gray-300 w-3/4 rounded-sm"></div><div class="h-full bg-gray-100 rounded-sm"></div></div>
+                                    </div>
+                                    <span class="text-xs font-bold text-center w-full block">احترافي</span>
+                                </button>
+                                <div id="lock-tmpl-professional" class="premium-lock rounded-xl" onclick="app.showProModal()"><i class="ri-lock-fill text-amber-500 text-xl"></i></div>
+                            </div>
+
+                            <div class="relative group">
+                                <button onclick="app.setTemplate('executive')" class="w-full p-2 border border-gray-200 rounded-xl flex flex-col gap-2 hover:bg-gray-50 transition-all" id="tmpl-executive">
+                                    <div class="h-12 w-full bg-white rounded border border-gray-200 flex flex-col p-1 gap-1">
+                                        <div class="w-full h-2 bg-gray-300 rounded-sm"></div>
+                                        <div class="flex gap-1 h-full">
+                                            <div class="w-1/3 bg-gray-200"></div>
+                                            <div class="w-2/3 flex flex-col gap-1">
+                                                <div class="h-2 bg-gray-300 w-full rounded-sm"></div>
+                                                <div class="h-2 bg-gray-300 w-3/4 rounded-sm"></div>
+                                                <div class="h-full bg-gray-100 rounded-sm"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-bold text-center w-full block">تنفيذي</span>
+                                </button>
+                                <div id="lock-tmpl-executive" class="premium-lock rounded-xl" onclick="app.showProModal()"><i class="ri-lock-fill text-amber-500 text-xl"></i></div>
+                            </div>
+
+                            <div class="relative group">
+                                <button onclick="app.setTemplate('creative')" class="w-full p-2 border border-gray-200 rounded-xl flex flex-col gap-2 hover:bg-gray-50 transition-all" id="tmpl-creative">
+                                    <div class="h-12 w-full bg-white rounded border border-gray-200 flex p-1 gap-1">
+                                        <div class="w-1/3 bg-gradient-to-br from-purple-400 to-pink-400 h-full rounded-sm"></div>
+                                        <div class="w-2/3 flex flex-col gap-1">
+                                            <div class="h-2 bg-gradient-to-r from-purple-400 to-pink-400 w-full rounded-sm"></div>
+                                            <div class="h-full bg-gradient-to-b from-purple-100 to-pink-100 rounded-sm"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-bold text-center w-full block">إبداعي</span>
+                                </button>
+                                <div id="lock-tmpl-creative" class="premium-lock rounded-xl" onclick="app.showProModal()"><i class="ri-lock-fill text-amber-500 text-xl"></i></div>
+                            </div>
+
+                            <div class="relative group">
+                                <button onclick="app.setTemplate('modern-blue')" class="w-full p-2 border border-gray-200 rounded-xl flex flex-col gap-2 hover:bg-gray-50 transition-all" id="tmpl-modern-blue">
+                                    <div class="h-12 w-full bg-white rounded border border-gray-200 flex p-1 gap-1">
+                                        <div class="w-1/3 bg-blue-600 h-full rounded-sm"></div>
+                                        <div class="w-2/3 flex flex-col gap-1">
+                                            <div class="h-2 bg-blue-500 w-full rounded-sm"></div>
+                                            <div class="h-full bg-blue-50 rounded-sm"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-bold text-center w-full block">أزرق عصري</span>
+                                </button>
+                                <div id="lock-tmpl-modern-blue" class="premium-lock rounded-xl" onclick="app.showProModal()"><i class="ri-lock-fill text-amber-500 text-xl"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <label class="block text-xs font-bold text-slate-500 mb-3">لون القالب</label>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="app.setTheme('blue')" class="w-8 h-8 rounded-full bg-slate-900 border-2 border-white shadow-md ring-2 ring-slate-900"></button>
+                            <button onclick="app.setTheme('green')" class="w-8 h-8 rounded-full bg-emerald-600 border-2 border-white shadow-md hover:scale-110 transition-transform"></button>
+                            <button onclick="app.setTheme('crimson')" class="w-8 h-8 rounded-full bg-red-700 border-2 border-white shadow-md hover:scale-110 transition-transform"></button>
+                            
+                            <div class="relative w-8 h-8">
+                                <button onclick="app.setTheme('gold')" class="w-full h-full rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-md"></button>
+                                <div class="premium-lock rounded-full" onclick="app.showProModal()"><i class="ri-lock-fill text-[10px]"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <label class="block text-xs font-bold text-slate-500 mb-3">نوع الخط (يدعم العربية بالكامل)</label>
+                        <div class="space-y-2">
+                            <button onclick="app.setFont('font-cairo')" class="w-full text-right p-3 border border-brand-500 bg-brand-50 rounded-lg font-cairo text-sm font-bold">خط القاهرة (Cairo) - افتراضي</button>
+                            <button onclick="app.setFont('font-tajawal')" class="w-full text-right p-3 border border-gray-200 rounded-lg hover:bg-gray-50 font-tajawal text-sm">خط تجوال (Tajawal) - عصري</button>
+                            <button onclick="app.setFont('font-ibm')" class="w-full text-right p-3 border border-gray-200 rounded-lg hover:bg-gray-50 font-ibm text-sm">IBM Plex - تقني</button>
+                            
+                            <div class="relative">
+                                <button onclick="app.setFont('font-amiri')" class="w-full text-right p-3 border border-gray-200 rounded-lg font-amiri text-sm font-bold">خط أميري (للمناصب الرسمية)</button>
+                                <div class="premium-lock rounded-lg" onclick="app.showProModal()"><i class="ri-lock-fill text-amber-500"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-2xl shadow-lg text-white relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                        <div class="flex justify-between items-center mb-2 relative z-10">
+                            <h3 class="font-bold text-sm flex items-center gap-2">
+                                <i class="ri-qr-code-line text-brand-400"></i> الرابط الذكي (QR)
+                            </h3>
+                            <span class="bg-brand-600 text-[9px] px-2 py-0.5 rounded text-white font-bold">جديد</span>
+                        </div>
+                        <p class="text-[10px] text-gray-300 mb-3 relative z-10">أضف كود QR يمكن للمدير مسحه للتواصل معك فوراً عبر واتساب.</p>
+                        <div class="relative z-10">
+                             <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="toggle-qr" class="sr-only peer" onchange="app.toggleQR(this)">
+                                <div class="w-9 h-5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-500"></div>
+                                <span class="text-xs font-bold">تفعيل الميزة</span>
+                            </label>
+                            <div class="premium-lock rounded-lg mt-2" id="lock-qr" onclick="app.showProModal()">
+                                <div class="bg-white/90 text-slate-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+                                    <i class="ri-lock-fill text-amber-500"></i> ميزة PRO
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-preview" class="hidden md:flex flex-1 bg-slate-200/80 relative overflow-hidden items-start justify-center custom-scrollbar overflow-y-auto">
+            <div class="hidden md:flex absolute bottom-6 left-6 flex-col gap-2 z-40 zoom-controls">
+                <button onclick="app.zoomIn()" class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 hover:text-brand-600 transition-all hover:scale-110">
+                    <i class="ri-add-line text-xl"></i>
+                </button>
+                <button onclick="app.zoomOut()" class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 hover:text-brand-600 transition-all hover:scale-110">
+                    <i class="ri-subtract-line text-xl"></i>
+                </button>
+            </div>
+
+            <div id="preview-container-wrapper">
+                <div id="cv-preview" class="font-cairo text-slate-800 relative">
+                    
+                    <div id="watermark" class="absolute inset-0 flex items-center justify-center pointer-events-none z-50 opacity-[0.03]">
+                         <div class="-rotate-45 text-8xl font-black text-slate-900 border-8 border-slate-900 p-10 rounded-3xl select-none">سيرتي AI</div>
+                    </div>
+
+                    <div class="template-container template-sidebar-right" id="cv-layout-container">
+                        
+                        <div id="cv-sidebar" class="template-sidebar sidebar-bg-1 text-white">
+                            <div class="text-center" id="cv-img-area">
+                                <div class="template-img-container">
+                                    <img id="cv-img-preview" src="" class="hidden">
+                                    <i id="cv-img-placeholder" class="ri-user-line text-6xl text-white/30 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-sm font-bold uppercase tracking-widest border-b border-white/20 pb-2 mb-4 text-brand-200 font-tajawal">معلومات الاتصال</h3>
+                                <ul class="text-sm space-y-3.5 opacity-95 font-light leading-relaxed">
+                                    <li class="flex items-center gap-3"><div class="w-6 h-6 rounded bg-white/10 flex items-center justify-center shrink-0"><i class="ri-phone-line text-xs"></i></div> <span id="cv-phone" dir="ltr" class="text-right font-sans text-xs"></span></li>
+                                    <li class="flex items-center gap-3"><div class="w-6 h-6 rounded bg-white/10 flex items-center justify-center shrink-0"><i class="ri-mail-line text-xs"></i></div> <span id="cv-email" class="break-all text-xs font-sans"></span></li>
+                                    <li class="flex items-center gap-3"><div class="w-6 h-6 rounded bg-white/10 flex items-center justify-center shrink-0"><i class="ri-map-pin-line text-xs"></i></div> <span id="cv-address" class="text-xs"></span></li>
+                                </ul>
+                            </div>
+
+                            <div class="flex-1">
+                                <h3 class="text-sm font-bold uppercase tracking-widest border-b border-white/20 pb-2 mb-4 text-brand-200 font-tajawal">المهارات</h3>
+                                <div id="cv-skills-list" class="flex flex-wrap gap-2"></div>
+                            </div>
+
+                            <div id="qr-container" class="hidden mt-auto pt-4 border-t border-white/10 text-center">
+                                <div class="bg-white p-2 rounded-lg inline-block mb-2">
+                                    <div id="qr-code"></div>
+                                </div>
+                                <p class="text-[9px] text-gray-400">امسح الكود للتواصل المباشر</p>
+                            </div>
+                        </div>
+
+                        <div class="template-main bg-white" id="cv-main">
+                            <div class="mb-10 border-b-2 border-gray-100 pb-6" id="cv-header-main">
+                                <h1 id="cv-name" class="text-[2.6rem] font-black text-slate-900 mb-1 text-brand-900 leading-tight tracking-tight arabic-text">الاسم هنا</h1>
+                                <h2 id="cv-title" class="text-xl accent-color-1 font-bold tracking-wide arabic-text">المسمى الوظيفي</h2>
+                            </div>
+
+                            <div class="mb-10 group">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-4 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-user-search-line"></i></div>
+                                    نبذة شخصية
+                                </h3>
+                                <p id="cv-summary" class="text-[0.92rem] text-slate-600 leading-[1.8] text-justify pl-2 border-r-2 border-brand-100 pr-4 arabic-text"></p>
+                            </div>
+
+                            <div class="mb-10">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-5 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-briefcase-4-line"></i></div>
+                                    الخبرات العملية
+                                </h3>
+                                <div class="space-y-6 relative">
+                                    <div class="absolute right-[7px] top-2 bottom-0 w-[2px] bg-gray-100"></div>
+                                    
+                                    <div class="relative pr-8">
+                                        <div class="absolute -right-[1px] top-2 w-4 h-4 accent-color-1 rounded-full ring-4 ring-white z-10"></div>
+                                        <div class="flex justify-between items-baseline mb-1">
+                                            <h4 id="cv-exp-role" class="font-bold text-slate-800 text-lg arabic-text"></h4>
+                                            <span id="cv-exp-date-prev" class="text-[11px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full font-sans"></span>
+                                        </div>
+                                        <h5 id="cv-exp-company" class="text-sm font-bold accent-color-1 mb-2 opacity-90 arabic-text"></h5>
+                                        <div id="cv-exp-desc" class="text-[0.9rem] text-slate-600 leading-relaxed arabic-text"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-5 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-graduation-cap-line"></i></div>
+                                    المؤهلات العلمية
+                                </h3>
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+                                    <div>
+                                        <h4 id="cv-edu-degree" class="font-bold text-slate-800 text-lg mb-1 arabic-text"></h4>
+                                        <p id="cv-edu-uni" class="text-sm text-gray-500 font-medium arabic-text"></p>
+                                    </div>
+                                    <span id="cv-edu-date-prev" class="text-sm font-bold accent-color-1 font-sans arabic-text"></span>
+                                </div>
+                            </div>
+
+                            <!-- المهارات الشخصية المضافة -->
+                            <div class="mb-6">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-5 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-user-heart-line"></i></div>
+                                    المهارات الشخصية
+                                </h3>
+                                <div id="cv-soft-skills" class="flex flex-wrap gap-2 arabic-text"></div>
+                            </div>
+
+                            <!-- المشاريع الشخصية المضافة -->
+                            <div class="mb-6">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-5 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-lightbulb-line"></i></div>
+                                    المشاريع الشخصية
+                                </h3>
+                                <div id="cv-projects" class="space-y-3 arabic-text"></div>
+                            </div>
+
+                            <!-- الدورات التدريبية المضافة -->
+                            <div class="mb-6">
+                                <h3 class="flex items-center gap-3 text-lg font-bold text-slate-900 uppercase tracking-wide mb-5 font-tajawal">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-50 accent-color-1 flex items-center justify-center"><i class="ri-award-line"></i></div>
+                                    الدورات والشهادات
+                                </h3>
+                                <div id="cv-certifications" class="space-y-2 arabic-text"></div>
+                            </div>
+                            
+                            <div class="mt-8 border-t border-gray-100 pt-4">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-sm font-bold text-slate-800">اللغات</h3>
+                                    <p id="cv-langs" class="text-sm text-slate-600 arabic-text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- نافذة الترقية -->
+    <div id="modal-payment" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[60] hidden flex items-center justify-center px-4 overflow-y-auto py-10">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300 border border-gray-200 scale-95 relative">
+            
+            <div class="bg-slate-900 p-6 text-white text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+                <button onclick="app.hideProModal()" class="absolute top-4 right-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full p-1 transition-all"><i class="ri-close-line text-2xl"></i></button>
+                <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-3 shadow-lg shadow-amber-500/50"><i class="ri-vip-crown-2-fill text-white"></i></div>
+                <h2 class="text-2xl font-bold font-cairo mb-1">ترقية للحزمة الذهبية</h2>
+                <p class="text-amber-400 text-sm font-bold opacity-90">كن متميزاً عن 95% من المتقدمين</p>
+            </div>
+
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center text-center gap-2">
+                        <i class="ri-palette-line text-brand-500 text-xl"></i>
+                        <span class="text-[10px] font-bold text-slate-600">12 قالب حصري</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center text-center gap-2">
+                        <i class="ri-qr-code-line text-brand-500 text-xl"></i>
+                        <span class="text-[10px] font-bold text-slate-600">ميزة الباركود الذكي</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center text-center gap-2">
+                        <i class="ri-text-spacing"></i>
+                        <span class="text-[10px] font-bold text-slate-600">خطوط رسمية (أميري)</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col items-center text-center gap-2">
+                        <i class="ri-hd-line text-brand-500 text-xl"></i>
+                        <span class="text-[10px] font-bold text-slate-600">PDF عالي الدقة</span>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-2xl p-5 mb-6 relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-3">
+                        <span class="text-sm font-bold text-slate-500">السعر النهائي</span>
+                        <span class="text-3xl font-black text-slate-900">3,000 <span class="text-sm font-medium text-slate-500">SDG</span></span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                            <div class="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center font-bold text-lg"><i class="ri-bank-card-line"></i></div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase">تطبيق بنكك - رقم الحساب</p>
+                                <p class="text-xl font-mono font-bold text-slate-800 tracking-wider select-all">9167972</p>
+                            </div>
+                        </div>
+                        <div class="text-xs text-center font-bold text-slate-500">باسم: محمد زكريا</div>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <a href="https://wa.me/249113997386?text=مرحباً، أريد تفعيل اشتراك سيرتي AI - النسخة الذهبية. لقد قمت بالتحويل." target="_blank" class="w-full block bg-[#25D366] hover:bg-[#20bd5a] text-white py-3 rounded-xl font-bold shadow-lg shadow-green-500/30 transition-all text-center flex items-center justify-center gap-2">
+                        <i class="ri-whatsapp-line text-xl"></i> تأكيد التحويل عبر واتساب
+                    </a>
+                    
+                    <div class="relative flex items-center gap-2 pt-2">
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                        <span class="text-[10px] text-gray-400 font-bold">أو أدخل كود التفعيل</span>
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="text" id="activation-code" placeholder="CODE-XXXX" class="flex-1 p-3 border-2 border-gray-200 rounded-xl text-center font-mono focus:border-brand-500 outline-none uppercase text-sm tracking-widest font-bold text-slate-700">
+                        <button onclick="app.verifyPayment()" id="btn-verify" class="bg-slate-800 text-white px-6 rounded-xl font-bold hover:bg-slate-900 transition-all text-sm shadow-lg">تفعيل</button>
+                    </div>
+                    <p id="payment-msg" class="text-xs text-center h-4 text-red-500 font-bold"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "AIzaSyCUFeFlZrpMA7oskIPpDxq9YjKkivAr-d0"; 
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBivffsmjIgPRpxJXmepcFk757gBwsO26w", 
+            authDomain: "cvcv-58020.firebaseapp.com", 
+            databaseURL: "https://cvcv-58020-default-rtdb.firebaseio.com", 
+            projectId: "cvcv-58020", 
+            storageBucket: "cvcv-58020.firebasestorage.app", 
+            messagingSenderId: "506564470660", 
+            appId: "1:506564470660:web:7e12220386c9d6a92d5fd1" 
+        };
+        
+        let db;
+        try { 
+            if (typeof firebase !== 'undefined') { 
+                if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); } 
+                db = firebase.database(); 
+            } 
+        } catch (e) { console.error(e); }
+
+        const app = {
+            state: { 
+                isPro: false, 
+                zoom: 0.65, 
+                theme: 'blue', 
+                layout: 'classic', 
+                font: 'font-cairo', 
+                qrActive: false, 
+                template: 'classic'
+            },
+
+            // API Logic
+            callGeminiAPI: async (sysPrompt, userQuery, btnId) => {
+                const btn = document.getElementById(btnId);
+                const oldHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = "<i class='ri-loader-4-line animate-spin'></i> جاري التفكير...";
+
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            contents: [{ parts: [{ text: userQuery }] }], 
+                            systemInstruction: { parts: [{ text: sysPrompt }] } 
+                        })
+                    });
+                    const data = await res.json();
+                    btn.innerHTML = oldHtml; 
+                    btn.disabled = false;
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "فشل التوليد";
+                } catch (e) {
+                    btn.innerHTML = oldHtml; 
+                    btn.disabled = false;
+                    return "خطأ في الاتصال";
+                }
+            },
+
+            generateAISummary: async () => {
+                const title = document.getElementById('inp-title').value;
+                if(!title) return alert('اكتب المسمى الوظيفي أولاً');
+                const res = await app.callGeminiAPI(
+                    "أنت خبير HR. اكتب ملخصاً مهنياً (3 أسطر) باللغة العربية للمسمى التالي، بأسلوب قوي وجذاب.", 
+                    title, 
+                    'btn-ai-summary'
+                );
+                if(res.length > 10) { 
+                    document.getElementById('inp-summary').value = res; 
+                    app.updateCV(); 
+                }
+            },
+
+            refineAIExperience: async () => {
+                const desc = document.getElementById('inp-exp-desc').value;
+                if(!desc) return alert('اكتب وصف الخبرة أولاً');
+                const res = await app.callGeminiAPI(
+                    "حول النص التالي إلى نقاط (Bullet points) تبدأ بأفعال إنجاز قوية باللغة العربية. لا تضف مقدمات.", 
+                    desc, 
+                    'btn-ai-refine'
+                );
+                if(res.length > 10) { 
+                    document.getElementById('inp-exp-desc').value = res; 
+                    app.updateCV(); 
+                }
+            },
+
+            // Core Logic
+            updateCV: () => {
+                const fields = {
+                    'inp-name': 'cv-name', 
+                    'inp-title': 'cv-title', 
+                    'inp-email': 'cv-email',
+                    'inp-phone': 'cv-phone', 
+                    'inp-address': 'cv-address', 
+                    'inp-summary': 'cv-summary',
+                    'inp-exp-role': 'cv-exp-role', 
+                    'inp-exp-company': 'cv-exp-company',
+                    'inp-exp-date': 'cv-exp-date-prev', 
+                    'inp-edu-degree': 'cv-edu-degree',
+                    'inp-edu-uni': 'cv-edu-uni', 
+                    'inp-edu-date': 'cv-edu-date-prev', 
+                    'inp-langs': 'cv-langs'
+                };
+
+                for (const [inp, out] of Object.entries(fields)) {
+                    const val = document.getElementById(inp).value;
+                    const el = document.getElementById(out);
+                    if(el) {
+                        el.innerText = val;
+                        el.classList.add('arabic-text');
+                    }
+                }
+
+                const desc = document.getElementById('inp-exp-desc').value;
+                const descHtml = desc ? `<ul class="list-disc pr-4 space-y-1 arabic-text">${desc.split('\n').filter(l=>l.trim()).map(l=>`<li>${l}</li>`).join('')}</ul>` : '';
+                document.getElementById('cv-exp-desc').innerHTML = descHtml;
+
+                const skills = document.getElementById('inp-skills').value;
+                const skillsHtml = skills ? skills.split(/,|،/).filter(s=>s.trim()).map(s=>`<span class="bg-white/15 px-2 py-1 rounded text-[10px] border border-white/10 inline-block arabic-text">${s.trim()}</span>`).join('') : '';
+                document.getElementById('cv-skills-list').innerHTML = skillsHtml;
+
+                // تحديث المهارات الشخصية
+                const softSkills = document.getElementById('inp-soft-skills').value;
+                const softSkillsHtml = softSkills ? softSkills.split(/,|،/).filter(s=>s.trim()).map(s=>`<span class="bg-slate-100 px-3 py-1 rounded-full text-xs border border-slate-200 inline-block arabic-text">${s.trim()}</span>`).join('') : '';
+                document.getElementById('cv-soft-skills').innerHTML = softSkillsHtml;
+
+                // تحديث المشاريع الشخصية
+                const projects = document.getElementById('inp-projects').value;
+                const projectsHtml = projects ? projects.split('\n').filter(p=>p.trim()).map(p=>`<div class="bg-slate-50 p-3 rounded-lg border border-slate-100"><p class="text-sm text-slate-700 arabic-text">${p.trim()}</p></div>`).join('') : '';
+                document.getElementById('cv-projects').innerHTML = projectsHtml;
+
+                // تحديث الدورات والشهادات
+                const certifications = document.getElementById('inp-certifications').value;
+                const certificationsHtml = certifications ? certifications.split('\n').filter(c=>c.trim()).map(c=>`<div class="flex items-center gap-2"><i class="ri-checkbox-circle-fill text-green-500 text-xs"></i><span class="text-sm text-slate-600 arabic-text">${c.trim()}</span></div>`).join('') : '';
+                document.getElementById('cv-certifications').innerHTML = certificationsHtml;
+
+                if(app.state.qrActive) app.generateQR();
+                app.calculateScore();
+            },
+
+            generateQR: () => {
+                const phone = document.getElementById('inp-phone').value;
+                const email = document.getElementById('inp-email').value;
+                const container = document.getElementById('qr-code');
+                container.innerHTML = ''; 
+                if(!phone && !email) return;
+                
+                const data = phone ? `https://wa.me/${phone.replace(/\s+/g, '').replace('+', '')}` : `mailto:${email}`;
+                new QRCode(container, { 
+                    text: data, 
+                    width: 64, 
+                    height: 64, 
+                    colorDark: "#000000", 
+                    colorLight: "#ffffff" 
+                });
+                document.getElementById('qr-container').classList.remove('hidden');
+            },
+
+            toggleQR: (cb) => {
+                if(!app.state.isPro) { 
+                    cb.checked = false; 
+                    app.showProModal(); 
+                    return; 
+                }
+                app.state.qrActive = cb.checked;
+                if(!cb.checked) {
+                    document.getElementById('qr-container').classList.add('hidden');
+                } else {
+                    app.updateCV();
+                }
+            },
+
+            setTheme: (color) => {
+                if(color === 'gold' && !app.state.isPro) { app.showProModal(); return; }
+                app.state.theme = color;
+                const themes = {
+                    blue: { sb: 'sidebar-bg-1', txt: 'accent-color-1', sub: 'text-brand-200', ico: 'bg-brand-50' },
+                    green: { sb: 'sidebar-bg-5', txt: 'accent-color-3', sub: 'text-emerald-200', ico: 'bg-emerald-50' },
+                    crimson: { sb: 'sidebar-bg-6', txt: 'accent-color-6', sub: 'text-red-200', ico: 'bg-red-50' },
+                    gold: { sb: 'sidebar-bg-7', txt: 'accent-color-5', sub: 'text-amber-400', ico: 'bg-amber-50' }
+                };
+                const t = themes[color];
+                
+                document.getElementById('cv-sidebar').className = `template-sidebar ${t.sb} text-white`;
+                document.getElementById('cv-title').className = `text-xl ${t.txt} font-bold tracking-wide arabic-text`;
+                document.querySelectorAll('#cv-sidebar h3').forEach(h => {
+                    h.className = `text-sm font-bold uppercase tracking-widest border-b border-white/20 pb-2 mb-4 ${t.sub} font-tajawal`;
+                });
+                document.querySelectorAll('#cv-main .w-8.h-8').forEach(el => {
+                    el.className = `w-8 h-8 rounded-lg ${t.ico} ${t.txt} flex items-center justify-center`;
+                });
+                document.querySelectorAll('.accent-color-1, .accent-color-3, .accent-color-6, .accent-color-5').forEach(el => {
+                    el.classList.remove('accent-color-1', 'accent-color-3', 'accent-color-6', 'accent-color-5');
+                    el.classList.add(t.txt);
+                });
+            },
+
+            setTemplate: (tmpl) => {
+                if((tmpl !== 'classic') && !app.state.isPro) { app.showProModal(); return; }
+                const container = document.getElementById('cv-layout-container');
+                const sb = document.getElementById('cv-sidebar');
+                const main = document.getElementById('cv-main');
+
+                container.className = 'template-container template-sidebar-right';
+                sb.style.order = '0';
+                sb.classList.remove('w-[28%]', 'w-[25%]', 'hidden');
+                main.classList.remove('p-8', 'p-6', 'p-12', 'p-10');
+                
+                document.querySelectorAll('#content-design button').forEach(b => {
+                    b.classList.remove('ring-2', 'ring-brand-500', 'bg-brand-50');
+                });
+                document.getElementById(`tmpl-${tmpl}`).classList.add('ring-2', 'ring-brand-500', 'bg-brand-50');
+
+                if (tmpl === 'classic') {
+                    container.style.flexDirection = 'row';
+                    sb.className = sb.className.replace(/sidebar-bg-\d+/, 'sidebar-bg-1');
+                    sb.style.width = '33%';
+                    main.style.padding = '2.5rem';
+                } else if (tmpl === 'left') {
+                    container.style.flexDirection = 'row-reverse';
+                    sb.className = sb.className.replace(/sidebar-bg-\d+/, 'sidebar-bg-2');
+                    sb.style.width = '33%';
+                    main.style.padding = '2.5rem';
+                } else if (tmpl === 'modern') {
+                    container.style.flexDirection = 'row-reverse';
+                    sb.className = sb.className.replace(/sidebar-bg-\d+/, 'sidebar-bg-3');
+                    sb.style.width = '28%';
+                    main.style.padding = '2rem';
+                } else if (tmpl === 'minimalist') {
+                    container.style.flexDirection = 'row';
+                    sb.className = sb.className.replace(/sidebar-bg-\d+/, 'sidebar-bg-4');
+                    sb.style.width = '25%';
+                    main.style.padding = '3rem';
+                } else if (tmpl === 'professional') {
+                    container.style.flexDirection = 'row-reverse';
+                    sb.className = sb.className.replace(/sidebar-bg-\d+/, 'sidebar-bg-5');
+                    main.style.padding = '2rem';
+                } else if (tmpl === 'executive') {
+                    container.style.flexDirection = 'row';
+                    sb.className = sb.className.replace(/sidebar-bg-\d+/, 'sidebar-bg-6');
+                    main.style.padding = '2.5rem';
+                } else if (tmpl === 'creative') {
+                    container.style.flexDirection = 'row-reverse';
+                    sb.className = sb.className.replace(/sidebar-bg-\d+/, 'sidebar-bg-4');
+                    main.style.padding = '2rem';
+                } else if (tmpl === 'modern-blue') {
+                    container.style.flexDirection = 'row';
+                    sb.className = sb.className.replace(/sidebar-bg-\d+/, 'sidebar-bg-3');
+                    main.style.padding = '2.5rem';
+                }
+                app.state.template = tmpl;
+                
+                if (tmpl === 'creative') app.setTheme('gold');
+                else if (tmpl === 'modern-blue') app.setTheme('blue');
+                else if (tmpl === 'professional') app.setTheme('green');
+                else if (tmpl === 'executive') app.setTheme('crimson');
+                else app.setTheme('blue');
+                
+                app.updateCV();
+            },
+
+            setFont: (fontClass) => {
+                if(fontClass === 'font-amiri' && !app.state.isPro) { app.showProModal(); return; }
+                const cv = document.getElementById('cv-preview');
+                cv.classList.remove('font-cairo', 'font-tajawal', 'font-ibm', 'font-amiri', 'font-changa', 'font-messiri', 'font-lateef', 'font-reem');
+                cv.classList.add(fontClass);
+                app.state.font = fontClass;
+                
+                document.querySelectorAll('#content-design button[onclick^="app.setFont"]').forEach(b => {
+                    b.classList.remove('border-brand-500', 'bg-brand-50');
+                });
+                event.currentTarget.classList.add('border-brand-500', 'bg-brand-50');
+            },
+
+            handleImageUpload: (e) => {
+                const file = e.target.files[0];
+                if(file){
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        ['cv-img-preview', 'thumb-preview'].forEach(id => {
+                            const el = document.getElementById(id);
+                            el.src = ev.target.result; 
+                            el.classList.remove('hidden');
+                        });
+                        ['cv-img-placeholder', 'thumb-icon'].forEach(id => {
+                            document.getElementById(id).classList.add('hidden');
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+            
+            removeImage: () => {
+                ['cv-img-preview', 'thumb-preview'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.src = ''; 
+                    el.classList.add('hidden');
+                });
+                ['cv-img-placeholder', 'thumb-icon'].forEach(id => {
+                    document.getElementById(id).classList.remove('hidden');
+                });
+            },
+            
+            toggleImage: (cb) => {
+                if(!app.state.isPro) { cb.checked = false; app.showProModal(); return; }
+                document.getElementById('cv-img-area').style.visibility = cb.checked ? 'hidden' : 'visible';
+            },
+
+            switchTab: (t) => {
+                document.getElementById('content-content').classList.add('hidden');
+                document.getElementById('content-design').classList.add('hidden');
+                document.getElementById(`content-${t}`).classList.remove('hidden');
+                
+                const active = "flex-1 py-4 text-sm font-bold text-brand-600 border-b-2 border-brand-600 bg-brand-50/50 transition-colors";
+                const inactive = "flex-1 py-4 text-sm font-bold text-gray-400 hover:text-slate-600 transition-colors";
+                document.getElementById('tab-content').className = t === 'content' ? active : inactive;
+                document.getElementById('tab-design').className = t === 'design' ? active : inactive;
+            },
+            
+            switchView: (v) => {
+                const ed = document.getElementById('panel-editor');
+                const pr = document.getElementById('panel-preview');
+                const bE = document.getElementById('btn-desktop-editor');
+                const bP = document.getElementById('btn-desktop-preview');
+                
+                if(v === 'editor') {
+                    ed.classList.remove('hidden'); 
+                    pr.classList.add('hidden'); 
+                    pr.classList.remove('flex');
+                    bE.className = "flex group items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl shadow transition-all text-xs font-bold hover:bg-slate-800 hover:scale-105";
+                    bP.className = "flex group items-center gap-2 bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-xl shadow transition-all text-xs font-bold hover:bg-slate-50 hover:scale-105";
+                } else {
+                    ed.classList.add('hidden'); 
+                    pr.classList.remove('hidden'); 
+                    pr.classList.add('flex');
+                    bP.className = "flex group items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl shadow transition-all text-xs font-bold hover:bg-slate-800 hover:scale-105";
+                    bE.className = "flex group items-center gap-2 bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-xl shadow transition-all text-xs font-bold hover:bg-slate-50 hover:scale-105";
+                    app.autoScale();
+                }
+            },
+            
+            autoScale: () => {
+                const p = document.getElementById('cv-preview');
+                if(window.innerWidth < 768) {
+                    const scale = (window.innerWidth - 40) / 794; 
+                    p.style.transform = `scale(${scale})`;
+                    app.state.zoom = scale;
+                    p.style.marginTop = "20px";
+                } else {
+                    p.style.transform = `scale(${app.state.zoom})`;
+                    p.style.marginTop = "40px";
+                }
+            },
+            
+            zoomIn: () => { 
+                app.state.zoom += 0.05; 
+                document.getElementById('cv-preview').style.transform = `scale(${app.state.zoom})`; 
+            },
+            
+            zoomOut: () => { 
+                app.state.zoom -= 0.05; 
+                document.getElementById('cv-preview').style.transform = `scale(${app.state.zoom})`; 
+            },
+            
+            calculateScore: () => {
+                const ids = ['inp-name','inp-title','inp-phone','inp-email','inp-summary','inp-exp-role','inp-exp-desc','inp-skills'];
+                let filled = ids.filter(id => document.getElementById(id).value.length > 3).length;
+                let pct = (filled / ids.length) * 100;
+                const bar = document.getElementById('score-bar');
+                bar.style.width = `${pct}%`;
+                bar.className = `h-full w-[10%] transition-all duration-700 ease-out shadow-[0_0_10px_rgba(255,255,255,0.5)] ${pct < 50 ? 'bg-red-500' : pct < 80 ? 'bg-amber-500' : 'bg-green-500'}`;
+            },
+
+            // ==========================================
+            // الدالة المحدثة للطباعة (للمستخدمين المحترفين فقط)
+            // ==========================================
+            handleDownload: () => {
+                if(!app.state.isPro) { 
+                    app.showProModal(); 
+                    return; 
+                }
+                window.print();
+            },
+
+            // Payment Modal Logic
+            showProModal: () => document.getElementById('modal-payment').classList.remove('hidden'),
+            hideProModal: () => document.getElementById('modal-payment').classList.add('hidden'),
+            
+            verifyPayment: async () => {
+                const code = document.getElementById('activation-code').value.trim().toUpperCase();
+                const msg = document.getElementById('payment-msg');
+                const btn = document.getElementById('btn-verify');
+                
+                if(!code) { msg.innerText = "أدخل الكود"; return; }
+                btn.innerHTML = "<i class='ri-loader-4-line animate-spin'></i>";
+
+                try {
+                    const snap = await db.ref('codes/' + code).get();
+                    if(snap.exists() || code === 'SUDAN3000') { 
+                        app.state.isPro = true;
+                        document.querySelectorAll('.premium-lock').forEach(e => e.style.display = 'none');
+                        document.getElementById('pro-badge').classList.remove('hidden');
+                        document.getElementById('watermark').style.display = 'none';
+                        app.hideProModal();
+                        
+                        const div = document.createElement('div');
+                        div.className = "fixed inset-0 bg-black/80 z-[80] flex items-center justify-center animate-in zoom-in";
+                        div.innerHTML = `
+                            <div class="bg-white p-8 rounded-2xl text-center max-w-sm">
+                                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="ri-check-line text-4xl text-green-600"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold mb-2">تم التفعيل بنجاح!</h2>
+                                <p class="text-gray-500 mb-6">استمتع بجميع مميزات النسخة الذهبية.</p>
+                                <button onclick="this.parentElement.parentElement.remove()" class="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold">ابدأ الآن</button>
+                            </div>
+                        `;
+                        document.body.appendChild(div);
+                    } else {
+                        msg.innerText = "كود غير صحيح";
+                    }
+                } catch(e) { 
+                    msg.innerText = "خطأ في الاتصال"; 
+                }
+                btn.innerHTML = "تفعيل";
+            }
+        };
+
+        window.onload = () => { 
+            app.updateCV(); 
+            app.autoScale(); 
+            app.setTheme('blue'); 
+            app.setTemplate('classic');
+            document.querySelectorAll('#cv-preview *').forEach(el => { el.style.fontFamily = 'inherit'; });
+            app.switchView('editor');
+        };
+        window.onresize = app.autoScale;
+    </script>
+</body>
+</html>
